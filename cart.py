@@ -35,34 +35,63 @@ class ShoppingCart:
 
 
     def add_item(self, sku, quantity):
+        if isinstance(quantity, bool) or not isinstance(quantity, int) or quantity <= 0:
+            return False
+
         product = self.repository.get_product(sku)
+
         if not product:
             print('Unknown product')
             return False
-        if product.stock < quantity:
+
+        existing = next(
+            (line for line in self.lines if line.sku == sku),
+            None
+        )
+
+        current_quantity = existing.quantity if existing else 0
+        new_quantity = current_quantity + quantity
+
+        if new_quantity > product.stock:
             print('Not enough stock')
             return False
-        existing = next((x for x in self.lines if x.sku == sku), None)
+
+
         if existing:
-            existing.quantity += quantity
+            existing.quantity = new_quantity
         else:
-            self.lines.append(CartLine(
-                sku, 
-                product.name, 
-                convertToCash(product.price), 
-                quantity))
+            self.lines.append(
+                CartLine(
+                    sku, 
+                    product.name, 
+                    convertToCash(product.price), 
+                    quantity
+                )
+            )
+
         return True
 
+
+
     def remove_item(self, sku, quantity=None):
+        if quantity is not None:
+            if isinstance(quantity, bool) or not isinstance(quantity, int) or quantity <= 0:
+                return False
+
+
         for line in self.lines:
             if line.sku == sku:
                 if quantity is None or quantity >= line.quantity:
                     self.lines.remove(line)
                 else:
                     line.quantity -= quantity
+
                 return True
+
         print('Item not found')
         return False
+
+
 
     def subtotal(self):
         return convertToCash(
