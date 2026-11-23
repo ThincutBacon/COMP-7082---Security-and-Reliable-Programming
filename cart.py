@@ -114,6 +114,8 @@ class ShoppingCart:
 
         return max(Decimal("0.00"), convertToCash(temp_amount))
 
+
+
     def apply_discount(self, code):
         valid_codes = (
             *self.PERCENT_DISCOUNTS.keys(),
@@ -128,9 +130,16 @@ class ShoppingCart:
         self.discount_code = code
         return True
 
+
+
     def load(self):
+        self.lines.clear()
+        self.discount_code = None
+
         for sku, quantity in self.repository.get_saved_cart(self.user_id):
             self.add_item(sku, quantity)
+
+
 
     def save(self):
         self.repository.save_cart(self.user_id, self.lines)
