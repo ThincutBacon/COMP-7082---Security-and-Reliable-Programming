@@ -1,12 +1,13 @@
 """Models for the intentionally imperfect order-management application."""
 from dataclasses import dataclass
+from decimal import Decimal
 
 
 @dataclass
 class Product:
     sku: str
     name: str
-    price: float
+    price: Decimal
     stock: int
 
 
@@ -14,7 +15,7 @@ class Product:
 class CartLine:
     sku: str
     name: str
-    unit_price: float
+    unit_price: Decimal
     quantity: int
 
 
@@ -22,4 +23,4 @@ class CartLine:
 class OrderResult:
     order_id: int | None
     status: str
-    total: float
+    total: Decimal
