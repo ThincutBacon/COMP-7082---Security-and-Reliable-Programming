@@ -4,7 +4,7 @@ from decimal import Decimal, ROUND_HALF_UP
 
 
 """Converts values to monetary standards rounded to cents"""
-def convertToCash(value):
+def convert_to_cash(value):
     return Decimal(str(value)).quantize(
         Decimal("0.01"),
         rounding=ROUND_HALF_UP
@@ -64,7 +64,7 @@ class ShoppingCart:
                 CartLine(
                     sku, 
                     product.name, 
-                    convertToCash(product.price), 
+                    convert_to_cash(product.price), 
                     quantity
                 )
             )
@@ -94,7 +94,7 @@ class ShoppingCart:
 
 
     def subtotal(self):
-        return convertToCash(
+        return convert_to_cash(
             sum(
                 (line.unit_price * line.quantity for line in self.lines),
                 Decimal("0.00")
@@ -112,7 +112,12 @@ class ShoppingCart:
             discount = self.SET_DISCOUNTS[self.discount_code]
             temp_amount -= discount
 
-        return max(Decimal("0.00"), convertToCash(temp_amount))
+        elif self.discount_code in self.OTHER_DISCOUNTS:
+            discount = self.OTHER_DISCOUNTS[self.discount_code]
+            print(discount)
+            pass
+
+        return max(Decimal("0.00"), convert_to_cash(temp_amount))
 
 
 
