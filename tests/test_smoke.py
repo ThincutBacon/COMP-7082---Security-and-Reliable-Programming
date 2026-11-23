@@ -1,19 +1,31 @@
-"""Two simple smoke tests"""
-import sqlite3
+
+import pytest
+
+from decimal import Decimal
 from setup_db import initialize
 from repository import StoreRepository
 from cart import ShoppingCart
+from payments import FakePaymentGateway
+from checkout import CheckoutService
 
 
-def test_seed_product(tmp_path):
-    db = tmp_path / 'test.db'
+
+@pytest.fixture
+def setup_store(tmp_path):
+    db = tmp_path / "test.db"
     initialize(str(db))
-    assert StoreRepository(str(db)).get_product('MOU-01').name == 'Wireless mouse'
+    repo = StoreRepository(str(db))
+    return repo
 
 
-def test_cart_adds_valid_item(tmp_path):
-    db = tmp_path / 'test.db'
-    initialize(str(db))
-    cart = ShoppingCart('student', StoreRepository(str(db)))
+
+# 1. Check that a seeded product exists
+def test_seed_product(setup_store):
+    product = setup_store.get_product("MOU-01")
+    assert product.name == "Wireless mouse"
+
+# 2. Check that a valid item can be added
+def test_cart_adds_valid_item(setup_store):
+    cart = ShoppingCart('student', setup_store)
     assert cart.add_item('USB-01', 2)
     assert len(cart.lines) == 1
