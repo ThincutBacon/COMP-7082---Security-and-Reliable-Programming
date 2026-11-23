@@ -11,14 +11,28 @@ def convertToCash(value):
     )
 
 
-
 class ShoppingCart:
+    """All Discount Codes"""
+    PERCENT_DISCOUNTS = {
+        "WELCOME10": Decimal("0.10"),
+        "STUDENT20": Decimal("0.20")
+    }
+
+    SET_DISCOUNTS = {
+        "SAVE15": Decimal("15.00")
+    }
+
+    OTHER_DISCOUNTS = {
+        "FREESHIP": 'Shipping is free'
+    }
+
+
     def __init__(self, user_id, repository):
         self.user_id = user_id
         self.repository = repository
         self.lines = []
         self.discount_code = None
-        self.discounted_total = None
+
 
     def add_item(self, sku, quantity):
         product = self.repository.get_product(sku)
@@ -59,25 +73,30 @@ class ShoppingCart:
         )
 
     def total(self):
-        if self.discounted_total is not None:
-            return self.discounted_total
-        return max(Decimal("0.00"), convertToCash(self.subtotal()))
+        temp_amount = self.subtotal()
+
+        if self.discount_code in self.PERCENT_DISCOUNTS:
+            discount = self.PERCENT_DISCOUNTS[self.discount_code]
+            temp_amount *= (Decimal("1.00") - discount)
+
+        elif self.discount_code in self.SET_DISCOUNTS:
+            discount = self.SET_DISCOUNTS[self.discount_code]
+            temp_amount -= discount
+
+        return max(Decimal("0.00"), convertToCash(temp_amount))
 
     def apply_discount(self, code):
-        amount = self.total()
-        if code == 'WELCOME10':
-            amount *= 0.9
-        elif code == 'STUDENT20':
-            amount *= 0.8
-        elif code == 'SAVE15':
-            amount -= 15
-        elif code == 'FREESHIP':
-            print('Shipping is free')
-        else:
+        valid_codes = (
+            *self.PERCENT_DISCOUNTS.keys(),
+            *self.SET_DISCOUNTS.keys(),
+            *self.OTHER_DISCOUNTS.keys()
+        )
+
+        if code not in valid_codes:
             print('Invalid coupon')
             return False
+
         self.discount_code = code
-        self.discounted_total = amount
         return True
 
     def load(self):
